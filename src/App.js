@@ -7,13 +7,19 @@ const colCss = { display: "flex", flexDirection: "column", gap: "5px" };
 const pixelCss_def = {
   width: "10px",
   height: "10px",
-  backgroundColor: "#6666eb",
+  backgroundColor: "#001F3F",
 };
-const pixelCss_new = { width: "10px", height: "10px", backgroundColor: "red" };
+const pixelCss_new = {
+  width: "10px",
+  height: "10px",
+  borderRadius: "50%",
+  backgroundColor: "#00FFFF",
+};
 const pixelCss_food = {
   width: "10px",
   height: "10px",
-  backgroundColor: "black",
+  borderRadius: "50%",
+  backgroundColor: "#FFDC00",
 };
 const boxCount = 20;
 const pixelArr = Array.from(Array(boxCount).keys());
@@ -27,6 +33,37 @@ function App() {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
+    const handleKeyDown = (event) => {
+      switch (event.key) {
+        case "ArrowLeft":
+          setPathStr("LEFT");
+          break;
+        case "ArrowRight":
+          setPathStr("RIGHT");
+          break;
+        case "ArrowUp":
+          setPathStr("UP");
+          break;
+        case "ArrowDown":
+          setPathStr("DOWN");
+          break;
+        default:
+          break;
+      }
+    };
+
+    // Attach the event listener
+    window.addEventListener("keydown", handleKeyDown);
+
+    // Clean up the event listener
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  useEffect(() => {
+    let isError = false;
+
     const intervalId = setInterval(() => {
       let tempArr = [...snakeArr];
       let tempSnakeLen = snakeLen;
@@ -49,8 +86,10 @@ function App() {
       new_Y_idx =
         new_Y_idx < 0 ? boxCount - 1 : new_Y_idx >= boxCount ? 0 : new_Y_idx;
       const newHead = `${new_Y_idx.toString()}:${new_X_idx.toString()}`;
+      isError = tempArr.includes(newHead);
 
       tempArr = [newHead, ...tempArr];
+      console.log({ isError });
 
       if (newHead === foodAxis) {
         let min = 0;
@@ -72,9 +111,10 @@ function App() {
       setCount((prev) => prev + 1);
     }, 200);
 
-    // if (count >= 99) {
-    //   clearInterval(intervalId);
-    // }
+    if (isError) {
+      setCount(-1);
+      clearInterval(intervalId);
+    }
 
     return () => clearInterval(intervalId);
   }, [count, pathStr]);
@@ -86,9 +126,9 @@ function App() {
       (["UP", "DOWN"].includes(pathStr) && ["UP", "DOWN"].includes(btnType))
     ) {
       return;
+    } else {
+      setPathStr(btnType);
     }
-
-    setPathStr(btnType);
   };
 
   return (
